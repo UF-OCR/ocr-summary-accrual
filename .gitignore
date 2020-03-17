@@ -1,0 +1,5 @@
+.idea/
+.DS_Store
+__pycache__/
+/store.npy
+static/summary_accrual.xlsx

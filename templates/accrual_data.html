@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Import Summary Accruals{% endblock %}
+{% block content %}
+<!-- Panel for uploading the files -->
+<div class="col-xl-6 offset-md-3">
+    <div class="card o-hidden border-0 shadow-lg my-5">
+        <h5 class="card-header">{{session['protocol']}}: {{session['title']}}</h5>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="col-md-12 mb-1 p-12">
+                        {% if not error %}
+                        <div class="text-center">
+                            <h4 class="h4 text-gray-900 mb-4"> Completed!!! {{response["total_accruals"]}} out of
+                                {{total_accruals}} accruals imported into OnCore</h4>
+                        </div>
+                        <div class="legend-section">
+                            <div>
+                                <div class="alert alert-danger" id="alert-danger"></div>
+                                <label class="p-10" for="alert-danger"></label> Failed to import in OnCore
+                            </div>
+                            <div>
+                                <div class="alert alert-success" id="alert-success"></div>
+                                <label class="p-10" for="alert-success"></label> Successfully imported into OnCore
+                            </div>
+                        </div>
+                        <p> Below are the details of summary accrual record(s) parsed from the accrual(s) provided.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% if response %}
+<div class="col-xl-12" class="table-responsive">
+<table class="table table-bordered white">
+    <thead class="thead-light">
+    <td>From Date</td>
+    <td>To Date</td>
+    <td>Institution</td>
+    <td>Internal Accrual Reporting Group</td>
+    <td>Gender</td>
+    <td>Age Group</td>
+    <td>Ethnicity</td>
+    <td>Race</td>
+    <td>DiseaseSite</td>
+    <td>Recruited By</td>
+    <td>Zip Code</td>
+    <td>Accruals</td>
+    <td>Record Status</td>
+    <td>Grouped accrual id/row #</td>
+    </thead>
+
+    {% for row in response["error_records"]: %}
+    <tr class="alert-danger">
+        <td class="col-xs-3">{{row["from_date"]}}</td>
+        <td class="col-xs-3">{{row["thru_date"]}}</td>
+        <td>{{row["instituition"]}}</td>
+        <td>{{row["internal_accrual_reporting_group"]}}</td>
+        <td>{{row["gender"]}}</td>
+        <td>{{row["age_group"]}}</td>
+        <td>{{row["ethnicity"]}}</td>
+        <td>{{row["race"]}}</td>
+        <td>{{row["disease_site"]}}</td>
+        <td>{{row["recruited_by"]["FirstName"]}}
+            {%if row["recruited_by"]["FirstName"]!=""%}
+            ,
+            {%endif%}
+            {{row["recruited_by"]["LastName"]}}
+        </td>
+        <td>{{row["zip_code"]}}</td>
+        <td>{{row["accrual"]}}</td>
+        <td>{{row["soap_message"]}}
+            {% for errors in row["error_cause"]: %}
+                 Invalid {{errors}}<br>
+            {% endfor %}
+        </td>
+        <td>
+            {{row["id"]}}
+        </td>
+    </tr>
+    {% endfor %}
+    {% for row in response["success_records"]: %}
+    <tr class="alert-success">
+        <td class="col-xs-3">{{row["from_date"]}}</td>
+        <td class="col-xs-3">{{row["thru_date"]}}</td>
+        <td>{{row["instituition"]}}</td>
+        <td>{{row["internal_accrual_reporting_group"]}}</td>
+        <td>{{row["gender"]}}</td>
+        <td>{{row["age_group"]}}</td>
+        <td>{{row["ethnicity"]}}</td>
+        <td>{{row["race"]}}</td>
+        <td>{{row["disease_site"]}}</td>
+        <td>{{row["recruited_by"]["FirstName"]}}
+            {%if row["recruited_by"]["FirstName"]!=""%}
+            ,
+            {%endif%}
+            {{row["recruited_by"]["LastName"]}}
+        </td>
+        <td>{{row["zip_code"]}}</td>
+        <td>{{row["accrual"]}}</td>
+        <td>{{row["soap_message"]}}</td>
+         <td>
+            {{row["id"]}}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+{% endif  %}
+{% endblock content %}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Import Summary Accruals{% endblock %}
+{% block content %}
+<div class="card-body">
+    <div class="alert alert-warning">Page under construction</div>
+    <h4 class="heading">Summary Accrual Tool</h4>
+    <br/>
+    <h6>Page Overview</h6>
+    <hr/>
+    <p> The Summary Accrual Import tool allows your to update you summary accrual details into OnCore.</p>
+    <p> You can export the accrual template below - This template provides the accrual sheet which allows you to prepare
+        your accrual data. The spreadsheet makes it easier to prepare your data for import.
+        You can make changes directly in the spreadsheet and then upload those changes into OnCore via Summary Accrual
+        Import Tool</p>
+    <div>
+        <a class="small col-md-6" href='/accrual/static/summary_accrual.xlsx' target="_blank">Download accrual
+            spreadsheet template</a>
+    </div>
+    <br/>
+    <h6>Preparing for Import</h6>
+    <hr/>
+    <p>Summary Accrual Import Tool accepts raw accrual data and translates it into the summary accrual record.
+
+        ** more info on the way
+    </p>
+    <h7>Using the accrual's template spreadsheet</h7>
+    <hr/>
+    <p>
+        Download the accrual template spreadsheet and copy paste your accrual data into the accruals tab. Do not edit
+        the column name.
+    </p>
+    <h7>Spreadsheet Columns</h7>
+    <hr/>
+    <ul>
+        <li>On Study Date*(required): The date of enrollment of the subject. Accepted format MM/DD/YYYY. Must fall
+            between Open to Accrual period for the Institution
+        </li>
+
+        <li>Institution(optional): Enrolling Institution of the subject. Must match institutions listed in PC Console >
+            Institution. Defaults to University of Florida if left blank.
+        </li>
+
+        <li>Gender(optional): Description of gender. If the Gender values are different from the OnCore Values (Male,
+            Female and Unknown) then use the Gender tab to provide a mapping scheme.
+        </li>
+
+        <li>Date of Birth(optional): Participant’s date of birth. Accepted in format (MM/DD/YYYY).</li>
+
+        <li>Age at Enrollment(optional): Participant age in years at time of enrollment. Only needed when Date of Birth
+            is not available. Accepts numeric value.
+        </li>
+
+        <li>Ethnicity(optional): Description of participant’s ethnicity. If the Ethnicity values are different from the
+            OnCore Values (Hispanic or Latino, Non-Hispanic, Subject Refused, Unknown) then use the Ethnicity tab to
+            provide a mapping scheme.
+        </li>
+
+        <li>Race(optional): Description of participant’s Race. If the Race values are different from the OnCore Values
+            (White, Black or African American, Unknown, Native Hawaiian or Other Pacific Islander, Asian, American
+            Indian or Alaska Native, Subject Refused, Unknown) then use the Race tab to provide a mapping scheme.
+        </li>
+
+        <li>Disease Site (optional, for Oncology only): Description of participant’s disease site. Should match the Data
+            Table 3 Disease Sites as listed in OnCore. Alternately, use the Disease Site tab to provide a mapping
+            scheme.
+        </li>
+
+        <li>First Name(optional): First Name of the recruited staff.</li>
+
+        <li>Last Name(optional): Last Name of the recruited staff.</li>
+
+        <li>Email Address(optional): Email address of the recruited staff. Must be an ufl.edu account.</li>
+
+        <li>Zip Code(optional): Participant Zip Code at time of enrollment.</li>
+
+    </ul>
+    <h6>Importing the accrual data</h6>
+    <hr/>
+    <h7>Upload data</h7>
+    <hr/>
+    ** add screen shot
+    <p>On the Home screen of the Summary Accrual Import Tool click ‘Choose File’ to browse for your
+        accrual spreadsheet and click Upload.</p>
+    <h7>Validate the data</h7>
+    <hr/>
+    ** add screen shot
+    <p>The Summary Accrual Import tool prepares the summary of the accrual data received.
+        The user can review this summary on the ‘Review’ screen and decide to either
+        proceed or reupload the data.</p>
+    <h7>Upload the data</h7>
+    <hr/>
+    ** add screen shot
+    <p>
+        On the ‘Review’ screen click on the button ‘Proceed’. The tool converts your data into summary accrual data and
+        sends it to OnCore. The results are displayed on the screen upon completion. The user can verify the summary
+        accrual data in OnCore(PC Console< Accrual).
+    </p>
+</div>
+{% endblock content %}

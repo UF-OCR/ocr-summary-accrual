@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Import Summary Accruals{% endblock %}
+{% block content %}
+<!-- Panel for uploading the files -->
+<!-- Panel for uploading the files -->
+<div class="col-xl-6 offset-md-3">
+    <div class="card o-hidden border-0 shadow-lg my-5">
+        <h5 class="card-header">{{session['protocol']}}: {{session['title']}}</h5>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="col-md-12 mb-1 p-12">
+                        <div class="text-center">
+                            <h4 class="h4 text-gray-900 mb-4">Please review the data before proceeding</h4>
+                        </div>
+                        {% if error %}
+                        <div class="alert alert-danger">
+                            {{error}}
+                        </div>
+                        {% endif %}
+                        <h8>We received {{total_rows}} accrual records. The data from your import file have been
+                            processed and a summary is provided below. Please review the transformed data and click the
+                            "Proceed" button to import the accruals to your protocol.
+                            <br>
+                            <strong>**IMPORTANT**</strong> All existing enrollment records for your protocol in OnCore
+                            will be deleted and replaced with this new dataset. Please make sure that your dataset
+                            includes ALL enrolled participants.
+                        </h8>
+                        <div class="legend-section">
+                            <div>
+                                <div class="alert alert-danger" id="alert-danger"></div>
+                                <label class="p-10" for="alert-danger"> Excluded rows:</label>
+                                {{on_study_date_missing_rows}} rows either have missing On study date or invalid data
+                                format. These rows will be excluded from the accrual import.
+                            </div>
+                            <div>
+                                <div class="alert alert-warning" id="alert-warning"></div>
+                                <label class="p-10" for="alert-warning"> Modified rows:</label> {{modified_rows}} rows
+                                have values without a corresponding value on one of the data mapping tabs. These rows
+                                will still be imported, however the values marked "No mapping found" will be left
+                                blank/null.
+                            </div>
+                            <div>
+                                <div class="alert alert-secondary" id="alert-secondary"></div>
+                                <label class="p-10" for="alert-secondary"> Other rows:</label>
+                                {{total_rows-on_study_date_missing_rows-modified_rows}} rows were successfully
+                                transformed using a corresponding value on one of the data mapping tabs. These rows will
+                                be imported as shown below.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7 offset-md-4">
+                        <a class="btn btn-primary white col-md-4" href="/accrual">Re-import Data</a>
+                        <button class="btn btn-primary white col-md-3" data-target="#importModal" data-toggle="modal"
+                                type="button">Proceed
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% if excluded_rows %}
+<div class="col-xl-12">
+    <div class="table-responsive" id="resultDiv">
+        <table class="table table-bordered">
+            <thead>
+            <td>Row #</td>
+            {% for column in columns: %}
+            <td>{{column}}</td>
+            {% endfor %}
+            </thead>
+            <tbody>
+            {% for e in excluded_rows: %}
+            {% if excluded_rows[e]["empty_onstudy"] or excluded_rows[e]["invalid_age"]%}
+            <tr class="alert-danger">
+                {% elif excluded_rows[e]['modified_rows']%}
+            <tr class="alert-warning">
+                {% else %}
+            <tr>
+                {% endif %}
+                <td>{{excluded_rows[e]["id"]}}</td>
+                {% for column in columns: %}
+                {% if column in "On Study Date*"  and excluded_rows[e]["empty_onstudy"]%}
+                <td style="border: 3px solid red">Missing enrollment date</td>
+                {% elif column in "Age at Enrollment"  and excluded_rows[e]["invalid_age"]%}
+                <td style="border: 3px solid red">{{excluded_rows[e][column]}}</td>
+                {% else %}
+                <td>{{excluded_rows[e][column]}}</td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif  %}
+
+<!-- Modal -->
+<div aria-hidden="true" aria-labelledby="importModalTitle" class="modal fade" id="importModal" role="dialog"
+     tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLongTitle">To continue, provide your OnCore password</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="/summary/{{user_name}}/{{protocol_no}}" method="post">
+<!--            <form action="/accrual/summary/{{user_name}}/{{protocol_no}}" method="post">-->
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input class="form-control" id="password" name="password" placeholder="Password"
+                               type="password">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
+                    <button class="btn btn-primary" type="submit">Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

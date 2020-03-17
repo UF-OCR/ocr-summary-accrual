@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Import Summary Accruals{% endblock %}
+{% block content %}
+<!-- Panel for uploading the files -->
+<div class="m-5">
+    <div class="row">
+        <img class="home-logo" src="/accrual/static/images/home_logo.png"/>
+    </div>
+
+    <div class="center-box login-box-wrapper w-940">
+        <div class="card-body row w-940">
+            <div class="p-5 user-info-box">
+                <p>
+                    The summary accrual import tool allows users to upload a file with protocol enrollments and
+                    subsequently import those enrollments in
+                    OnCore as summary accruals. This summary accrual import process only applies to protocols that are
+                    eligible to record summary data
+                    (see Protocol Eligibility below).
+                </p>
+                <strong>Protocol Eligibility:</strong>
+                <ul>
+                    <li>The protocol is configured for summary accrual</li>
+                    <li>The protocol does not have clinical services occurring in a UF Health location (e.g. blood
+                        draws, labs, EKG’s).
+                    </li>
+                    <li>The protocol will not use an OnCore calendar.</li>
+                    <li>Import tool users must be listed as protocol staff for the protocol in OnCore.</li>
+                </ul>
+                <p> Note: the login credentials are the same as OnCore login credentials</p>
+            </div>
+            <div class="user-login-box">
+                 <form action="/" class="p-5 user" method="post">
+<!--                <form action="/accrual" class="p-5 user" method="post">-->
+                    <h1 class="h4 text-center text-gray-900 mb-4">Login</h1>
+                    {% if error %}
+                    <div class="alert alert-danger">
+                        {{error}}
+                    </div>
+                    {% endif %}
+                    <div class="form-group">
+                        <input aria-describedby="protocol_no" class="form-control form-control-user" id="protocol_no" name="protocol_no"
+                               placeholder="Enter OnCore Protocol No" type="text">
+                    </div>
+                    <div class="form-group">
+                        <input aria-describedby="username" class="form-control form-control-user" id="username" name="username"
+                               placeholder="Enter OnCore Username" type="text">
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control form-control-user" id="password" name="password" placeholder="Enter OnCore Password"
+                               type="password">
+                    </div>
+                    <button class="btn btn-primary btn-user btn-block" type="submit">
+                        Proceed
+                    </button>
+                    <div class="content-center col-md-12">
+                        <!--                              <a class="small col-md-6" style="border-right: 1px solid #e3e6f0" href="/about">Import tool user guide</a>-->
+                        <a class="small col-md-6 offset-md-3" href='/accrual/static/summary_accrual.xlsx' target="_blank">Download accrual template</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock content %}

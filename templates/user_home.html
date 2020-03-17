@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Import Summary Accruals{% endblock %}
+{% block content %}
+<!-- Panel for uploading the files -->
+<div class="col-xl-6 offset-md-3">
+    <div class="card o-hidden border-0 shadow-lg my-5">
+        <div class="card-body">
+            <h1 class="display-4">Hello, {{user_name}}!</h1>
+            {% if error %}
+            <div class="alert alert-danger">
+                {{error}}
+            </div>
+            {% endif %}
+            <p class="lead">To proceed, upload the accrual data in excel file format</p>
+            <hr class="my-4">
+            <form action="/data/{{user_name}}/{{protocol_no}}" class="row user" enctype=multipart/form-data
+                  method="post">
+<!--            <form action="/accrual/data/{{user_name}}/{{protocol_no}}" class="row user" enctype=multipart/form-data-->
+<!--                  method="post">-->
+                <div class="form-group col-lg-12">
+                    <label><strong>Protocol no:</strong> {{protocol_no}}</label>
+                </div>
+                <div class="form-group col-lg-12">
+                    <label><strong>Title:</strong> {{session["title"]}}</label>
+                </div>
+                <div class="form-group col-lg-12">
+                    <label for="file"><strong>Upload excel file:</strong></label>
+                    <input id="file" name="file" type="file">
+                </div>
+                <div class="form-group col-lg-12">
+                    <label for="checkbox"><strong>Ignore OnCore Mapping Tabs:</strong></label>
+                    <input id="checkbox" name="ignore_mapping_tabs" type="checkbox">
+                </div>
+                <p class="lead">
+                    <button class="btn btn-primary btn-lg m-2" type="submit">Upload</button>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

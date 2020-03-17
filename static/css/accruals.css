@@ -1,0 +1,82 @@
+body {
+}
+.pagination-page-info {
+    padding: .6em;
+    padding-left: 0;
+    width: 40em;
+    margin: .5em;
+    margin-left: 0;
+    font-size: 12px;
+}
+
+.pagination a {
+  border: 1px solid #ddd; /* Gray */
+}
+.pagination a {
+  padding: 0.5rem 0.5rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+
+.legend-section .alert {
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    margin: 0 3px 3px 0;
+    display: inline-block;
+}
+
+.legend-section .alert-warning {
+    border-color: #ffeeba !important;
+}
+
+.legend-section .alert-success {
+    border-color: #c3e6cb !important;
+}
+
+.legend-section .alert-primary {
+    border-color: #b8daff !important;
+}
+
+.btn-primary:focus, .btn-primary:hover{
+    background-position: 0 -50px;
+}
+
+.center-box{
+    font-size: 14px;
+    border-radius: 20px;
+    max-width: 940px;
+    border: 1px solid #C5DAE2;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.home-logo{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 30%;
+  max-width:420px
+ }
+
+.login-box-wrapper{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+.w-940{
+    min-width:940px;
+}
+
+.user-info-box{
+    border-right: 1px solid #e3e6f0;
+    width:50%;
+    min-width:400px;
+}
+.user-login-box{
+    width:50%;
+    min-width:410px;
+}
