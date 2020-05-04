@@ -7,7 +7,6 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
 
     if cols is None:
         return None, None, None, None, "Empty data received"
-
     row_starts = 2
     if received_data[1][0] == "Description":
         row_starts = 4
@@ -27,14 +26,18 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
 
     data['empty_onstudy'] = False
     data['invalid_age'] = False
+    data['invalid_zip'] = False
     data['modified_rows'] = False
 
-    data['id'] = row_starts + np.arange(len(data))
+    if 'id' not in data:
+        data['id'] = row_starts + np.arange(len(data))
 
     if 'Gender' not in data:
         data['Gender'] = ''
     else:
         data['Gender'] = data['Gender'].fillna("No value received")
+        data['Gender'] = data['Gender'].astype(str)
+        data['Gender'] = data['Gender'].str.replace(r'[-+]?\.[0-9]*', '')
         if gender_data is not None:
             gender_data = pd.DataFrame(data=gender_data[1:])
             gender_data_dict = createDict(gender_data)
@@ -46,6 +49,8 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
         data['Ethnicity'] = ''
     else:
         data['Ethnicity'] = data['Ethnicity'].fillna("No value received")
+        data['Ethnicity'] = data['Ethnicity'].astype(str)
+        data['Ethnicity'] = data['Ethnicity'].str.replace(r'[-+]?\.[0-9]*', '')
         if ethnicity_data is not None:
             ethnicity_data = pd.DataFrame(data=ethnicity_data[1:])
             ethnicity_data_dict = createDict(ethnicity_data)
@@ -57,6 +62,8 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
         data['Race'] = ''
     else:
         data['Race'] = data['Race'].fillna("No value received")
+        data['Race'] = data['Race'].astype(str)
+        data['Race'] = data['Race'].str.replace(r'[-+]?\.[0-9]*', '')
         if race_data is not None:
             race_data = pd.DataFrame(data=race_data[1:])
             race_data_dict = createDict(race_data)
@@ -93,22 +100,32 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
 
     try:
         if 'Zip Code' in data:
-            data['Zip Code'] = data['Zip Code'].fillna(0)
-            data['Zip Code'] = data['Zip Code'].astype(int)
-            data['Zip Code'] = data['Zip Code'].replace(0, "No value received")
+            zip_code_na_len = len(data[data['Zip Code'].isna()].index)
+            zip_code_len = len(data['Zip Code'].index)
+            if zip_code_na_len != zip_code_len:
+                zipcode_exp = '^[0-9]{5}(?:-[0-9]{4})?$'
+                data['Zip Code'] = data['Zip Code'].astype(str)
+                data['Zip Code'] = data['Zip Code'].str.replace(r'[-+]?\.[0-9]*', '')
+                data['Zip Code'] = data['Zip Code'].replace("", np.nan)
+                data['Zip Code'] = data['Zip Code'].replace("nan", np.nan)
+                numeric_index = data[data['Zip Code'].str.contains(str(zipcode_exp), na=True, regex=True) == False].index
+                data.loc[numeric_index, ['invalid_zip']] = True
+                data['Zip Code'] = data['Zip Code'].fillna("No value received")
     except:
         return None, None, None, None, "Something went wrong while processing the zip code field"
-
     try:
         if 'Age at Enrollment' in data:
-            age_range_exp = '^([0-9]|[1-8][0-9]|9[0-9]|1[0-2][0-9]|13[0-2])$'
-            data['Age at Enrollment'] = data['Age at Enrollment'].astype(str)
-            data['Age at Enrollment'] = data['Age at Enrollment'].str.replace(r'[-+]?\.[0-9]*', '')
-            data['Age at Enrollment'] = data['Age at Enrollment'].replace("", np.nan)
-            data['Age at Enrollment'] = data['Age at Enrollment'].replace("nan", np.nan)
-            numeric_index = data[data['Age at Enrollment'].str.contains(str(age_range_exp), na=True, regex=True)==False].index
-            data.loc[numeric_index, ['invalid_age']] = True
-            data['Age at Enrollment'] = data['Age at Enrollment'].fillna("No value received")
+            age_na_len = len(data[data['Age at Enrollment'].isna()].index)
+            age_len = len(data['Age at Enrollment'].index)
+            if age_na_len != age_len:
+                age_range_exp = '^([0-9]|[1-8][0-9]|9[0-9]|1[0-2][0-9]|13[0-5])$'
+                data['Age at Enrollment'] = data['Age at Enrollment'].astype(str)
+                data['Age at Enrollment'] = data['Age at Enrollment'].str.replace(r'[-+]?\.[0-9]*', '')
+                data['Age at Enrollment'] = data['Age at Enrollment'].replace("", np.nan)
+                data['Age at Enrollment'] = data['Age at Enrollment'].replace("nan", np.nan)
+                numeric_index = data[data['Age at Enrollment'].str.contains(str(age_range_exp), na=True, regex=True)==False].index
+                data.loc[numeric_index, ['invalid_age']] = True
+                data['Age at Enrollment'] = data['Age at Enrollment'].fillna("No value received")
     except:
         return None, None, None, None, "Something went wrong while processing the age at enrollment field"
 
@@ -131,7 +148,7 @@ def accrual_summary(data):
         data = data.replace(r'^\s+$', np.nan, regex=True)
         data = data.replace('', np.nan)
         data = data.dropna(how='all')
-        drop_index = data[(data['invalid_age']) | (data['empty_onstudy'])].index
+        drop_index = data[(data['invalid_age']) | (data['empty_onstudy']) | (data['invalid_zip'])].index
         if len(drop_index) > 0:
             data = data.drop(drop_index)
 

@@ -13,10 +13,8 @@
             {% endif %}
             <p class="lead">To proceed, upload the accrual data in excel file format</p>
             <hr class="my-4">
-            <form action="/data/{{user_name}}/{{protocol_no}}" class="row user" enctype=multipart/form-data
+            <form action="/accrual/data/{{user_name}}/{{protocol_no}}" class="row user" enctype=multipart/form-data
                   method="post">
-<!--            <form action="/accrual/data/{{user_name}}/{{protocol_no}}" class="row user" enctype=multipart/form-data-->
-<!--                  method="post">-->
                 <div class="form-group col-lg-12">
                     <label><strong>Protocol no:</strong> {{protocol_no}}</label>
                 </div>
