@@ -83,7 +83,7 @@
                 {% for column in columns: %}
                 {% if column in "On Study Date*"  and excluded_rows[e]["empty_onstudy"]%}
                 <td style="border: 3px solid red">Missing enrollment date</td>
-                {% elif column in "Age at Enrollment"  and excluded_rows[e]["invalid_age"]%}
+                {% elif (column in "Age at Enrollment"  and excluded_rows[e]["invalid_age"]) or (column in "Zip Code"  and excluded_rows[e]["invalid_zip"])%}
                 <td style="border: 3px solid red">{{excluded_rows[e][column]}}</td>
                 {% else %}
                 <td>{{excluded_rows[e][column]}}</td>
@@ -108,8 +108,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="/summary/{{user_name}}/{{protocol_no}}" method="post">
-<!--            <form action="/accrual/summary/{{user_name}}/{{protocol_no}}" method="post">-->
+            <form action="/accrual/summary/{{user_name}}/{{protocol_no}}" method="post">
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="password">Password</label>
