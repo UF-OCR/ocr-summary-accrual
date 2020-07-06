@@ -17,6 +17,7 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
     if received_data is None:
         return None, None, None, None, "Empty rows received"
 
+
     data = pd.DataFrame(data=received_data, columns=cols)
     data = data.replace(r'^\s*$', np.nan, regex=True)
     data = data.dropna(how='all')
@@ -36,12 +37,13 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
         data['Gender'] = ''
     else:
         data['Gender'] = data['Gender'].fillna("No value received")
-        data['Gender'] = data['Gender'].astype(str)
+        data['Gender'] = data['Gender'].apply(str)
         data['Gender'] = data['Gender'].str.replace(r'[-+]?\.[0-9]*', '')
         if gender_data is not None:
             gender_data = pd.DataFrame(data=gender_data[1:])
             gender_data_dict = createDict(gender_data)
             gender_data_dict['No value received'] = 'No value received'
+            data['Gender'] = data['Gender'].str.strip()
             data['Gender'] = data['Gender'].map(gender_data_dict)
             data['Gender'] = data['Gender'].fillna("No mapping found")
 
@@ -49,12 +51,13 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
         data['Ethnicity'] = ''
     else:
         data['Ethnicity'] = data['Ethnicity'].fillna("No value received")
-        data['Ethnicity'] = data['Ethnicity'].astype(str)
+        data['Ethnicity'] = data['Ethnicity'].apply(str)
         data['Ethnicity'] = data['Ethnicity'].str.replace(r'[-+]?\.[0-9]*', '')
         if ethnicity_data is not None:
             ethnicity_data = pd.DataFrame(data=ethnicity_data[1:])
             ethnicity_data_dict = createDict(ethnicity_data)
             ethnicity_data_dict['No value received'] = 'No value received'
+            data['Ethnicity'] = data['Ethnicity'].str.strip()
             data['Ethnicity'] = data['Ethnicity'].map(ethnicity_data_dict)
             data['Ethnicity'] = data['Ethnicity'].fillna("No mapping found")
 
@@ -62,12 +65,13 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
         data['Race'] = ''
     else:
         data['Race'] = data['Race'].fillna("No value received")
-        data['Race'] = data['Race'].astype(str)
+        data['Race'] = data['Race'].apply(str)
         data['Race'] = data['Race'].str.replace(r'[-+]?\.[0-9]*', '')
         if race_data is not None:
             race_data = pd.DataFrame(data=race_data[1:])
             race_data_dict = createDict(race_data)
             race_data_dict['No value received'] = 'No value received'
+            data['Race'] = data['Race'].str.strip()
             data['Race'] = data['Race'].map(race_data_dict)
             data['Race'] = data['Race'].fillna("No mapping found")
 
@@ -79,6 +83,7 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
             disease_site_data = pd.DataFrame(data=disease_site_data[1:])
             disease_site_data_dict = createDict(disease_site_data)
             disease_site_data_dict['No value received'] = "No value received"
+            data['Disease Site'] = data['Disease Site'].str.strip()
             data['Disease Site'] = data['Disease Site'].map(disease_site_data_dict)
             data['Disease Site'] = data['Disease Site'].fillna("No mapping found")
 
@@ -103,9 +108,8 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
             zip_code_na_len = len(data[data['Zip Code'].isna()].index)
             zip_code_len = len(data['Zip Code'].index)
             if zip_code_na_len != zip_code_len:
-                zipcode_exp = '^[0-9]{5}(?:-[0-9]{4})?$'
-                data['Zip Code'] = data['Zip Code'].astype(str)
-                data['Zip Code'] = data['Zip Code'].str.replace(r'[-+]?\.[0-9]*', '')
+                zipcode_exp = '^.{1,15}$'
+                data['Zip Code'] = data['Zip Code'].apply(str)
                 data['Zip Code'] = data['Zip Code'].replace("", np.nan)
                 data['Zip Code'] = data['Zip Code'].replace("nan", np.nan)
                 numeric_index = data[data['Zip Code'].str.contains(str(zipcode_exp), na=True, regex=True) == False].index
@@ -135,8 +139,8 @@ def excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease
 
     data = data.fillna("No value received")
 
-    missing_rows = len(data[(data['invalid_age']) | (data['empty_onstudy'])].index)
-    modified_rows = len(data[(data['invalid_age'] == False) & (data['empty_onstudy'] == False) & (data['modified_rows'])].index)
+    missing_rows = len(data[(data['invalid_age']) | (data['empty_onstudy']) | (data['invalid_zip'])].index)
+    modified_rows = len(data[(data['invalid_age'] == False) & (data['empty_onstudy'] == False) & (data['invalid_zip'] == False) & (data['modified_rows'])].index)
 
     data = data.sort_values(by=['id'], ascending=[True])
 

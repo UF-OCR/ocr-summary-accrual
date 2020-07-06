@@ -72,7 +72,7 @@
             </thead>
             <tbody>
             {% for e in excluded_rows: %}
-            {% if excluded_rows[e]["empty_onstudy"] or excluded_rows[e]["invalid_age"]%}
+            {% if excluded_rows[e]["empty_onstudy"] or excluded_rows[e]["invalid_age"] or excluded_rows[e]["invalid_zip"]%}
             <tr class="alert-danger">
                 {% elif excluded_rows[e]['modified_rows']%}
             <tr class="alert-warning">
