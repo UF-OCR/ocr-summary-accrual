@@ -1,5 +1,7 @@
 import json
 import sys
+import os
+from os import path
 from datetime import timedelta
 from client.ocrclient import *
 from client.parsedata import *
@@ -21,12 +23,16 @@ def validate_user():
                                    error="There was an error with your protocol no/username/password combination. Please try again.")
         decode_json = content.decode('utf8').replace("'", '"')
         data = json.loads(decode_json)
-        if not data["accrual_info_only"]:
+        if 'error' in data:
+            return render_template('index.html',
+                                   error=data['error'])
+        if 'accrual_info_only' in data and not data["accrual_info_only"]:
             return render_template('index.html',
                                    error="Summary accrual is set to 'No' for the provided protocol. Please try another protocol.")
         session["user"] = user_name
         session["protocol"] = protocol_no
         session["title"] = data["title"]
+
         return redirect(url_for("user_home", user_name=user_name, protocol_no=protocol_no))
     if 'user' in session:
         return redirect(url_for("user_home", user_name=session.get('user'), protocol_no=session.get('protocol')))
@@ -54,6 +60,10 @@ def get_rows(data, offset=0, per_page=10):
 
 @app.route("/logout")
 def logout():
+    if path.exists("results_"+session["protocol"]+"_"+session["user"]+".npy"):
+        os.remove("results_"+session["protocol"]+"_"+session["user"]+".npy")
+    if path.exists("store_"+session["protocol"]+"_"+session["user"]+ ".npy"):
+        os.remove("store_"+session["protocol"]+"_"+session["user"]+ ".npy")
     session.clear()
     return redirect(url_for("validate_user"))
 
@@ -67,7 +77,7 @@ def upload_file(user_name, protocol_no):
                 session.pop("columns")
                 session.pop("invalid_rows")
                 session.pop("modified_rows")
-                np.save('store.npy', "")
+                np.save('store_'+protocol_no+'_'+user_name+'.npy', "")
 
             ignore_mapping_tabs= request.form.get('ignore_mapping_tabs')
 
@@ -118,7 +128,7 @@ def upload_file(user_name, protocol_no):
 
             session['columns'] = cols
             session['total_accruals'] = total
-            np.save('store.npy', excluded_rows_dict)
+            np.save('store_'+protocol_no+'_'+user_name+'.npy', excluded_rows_dict)
             session['invalid_rows'] = on_study_date_missing_rows
             session['modified_rows'] = modified_rows
 
@@ -132,7 +142,7 @@ def upload_file(user_name, protocol_no):
                 session.pop("columns")
                 session.pop("invalid_rows")
                 session.pop("modified_rows")
-                np.save('store.npy', "")
+                np.save('store_'+protocol_no+'_'+user_name+'.npy', "")
             return render_template('user_home.html', user_name=user_name, protocol_no=protocol_no,
                                    error="File not received. Please upload the file before proceeding.")
         except OSError as err:
@@ -141,7 +151,7 @@ def upload_file(user_name, protocol_no):
                 session.pop("columns")
                 session.pop("invalid_rows")
                 session.pop("modified_rows")
-                np.save('store.npy', "")
+                np.save('store_'+protocol_no+'_'+user_name+'.npy', "")
             return render_template('user_home.html', user_name=user_name, protocol_no=protocol_no,
                                    error="OS error: {0}".format(err))
         except:
@@ -150,7 +160,7 @@ def upload_file(user_name, protocol_no):
                 session.pop("columns")
                 session.pop("invalid_rows")
                 session.pop("modified_rows")
-                np.save('store.npy', "")
+                np.save('store_'+protocol_no+'_'+user_name+'.npy', "")
             return render_template('user_home.html', user_name=user_name, protocol_no=protocol_no,
                                    error="Unexpected error:" + str(sys.exc_info()))
 
@@ -161,11 +171,12 @@ def upload_file(user_name, protocol_no):
             error = session.get('error')
         if 'total_accruals' in session:
             # Load
-            rows = np.load('store.npy', allow_pickle='TRUE').item()
-            return render_template('data.html', protocol_no=protocol_no, excluded_rows=rows, columns=session.get('columns'),
-                                   total_rows=session.get('total_accruals'), on_study_date_missing_rows=session.get('invalid_rows'),
-                                   modified_rows=session.get('modified_rows'),
-                                   user_name=user_name, error=error)
+            if path.exists("store_" + session["protocol"] + "_" + session["user"] + ".npy"):
+                rows = np.load('store_'+protocol_no+'_'+user_name+'.npy', allow_pickle='TRUE').item()
+                return render_template('data.html', protocol_no=protocol_no, excluded_rows=rows, columns=session.get('columns'),
+                                       total_rows=session.get('total_accruals'), on_study_date_missing_rows=session.get('invalid_rows'),
+                                       modified_rows=session.get('modified_rows'),
+                                       user_name=user_name, error=error)
 
     return redirect(url_for("user_home", user_name=user_name, protocol_no=protocol_no))
 
@@ -175,47 +186,49 @@ def parse_summary_accruals(user_name, protocol_no):
     if request.method == 'POST':
         if 'error' in session:
             session.pop('error')
-            np.save('results.npy', '')
+            np.save('results_'+protocol_no+'_'+user_name+'.npy', '')
 
         if 'total_accruals' in session:
-            rows = np.load('store.npy', allow_pickle='TRUE').item()
-            total_accruals, parsed_rows = accrual_summary(rows)
-            if total_accruals < 0:
-                session['error'] = 'Sorry!! We are unable to process your request' + parsed_rows
-                return redirect(url_for("upload_file", user_name=user_name, protocol_no=protocol_no))
+            if path.exists("store_" + session["protocol"] + "_" + session["user"] + ".npy"):
+                rows = np.load('store_'+protocol_no+'_'+user_name+'.npy', allow_pickle='TRUE').item()
+                total_accruals, parsed_rows = accrual_summary(rows)
+                if total_accruals < 0:
+                    session['error'] = 'Sorry!! We are unable to process your request' + parsed_rows
+                    return redirect(url_for("upload_file", user_name=user_name, protocol_no=protocol_no))
 
-            password = request.form["password"]
-            json_data = {
-                "credentials": {"username": user_name, "password": password},
-                "protocol_no": protocol_no,
-                "total_accruals": total_accruals,
-                "accrual_data": json.loads(parsed_rows)
-            }
+                password = request.form["password"]
+                json_data = {
+                    "credentials": {"username": user_name, "password": password},
+                    "protocol_no": protocol_no,
+                    "total_accruals": total_accruals,
+                    "accrual_data": json.loads(parsed_rows)
+                }
 
-            status, content = post_accruals(json_data)
+                status, content = post_accruals(json_data)
 
-            if status != 200:
-                error = Markup(content.decode("utf-8") )
-                session['error'] = error
-                rows = np.load('store.npy', allow_pickle='TRUE').item()
-                return render_template('data.html', protocol_no=protocol_no,
-                                       excluded_rows=rows, columns=session.get('columns'),
-                                       total_rows=session.get('total_accruals'),
-                                       on_study_date_missing_rows=session.get('invalid_rows'),
-                                       modified_rows=session.get('modified_rows'),
-                                       user_name=user_name, error=error)
+                if status != 200:
+                    error = Markup(content.decode("utf-8") )
+                    session['error'] = error
+                    rows = np.load('store_'+protocol_no+'_'+user_name+'.npy', allow_pickle='TRUE').item()
+                    return render_template('data.html', protocol_no=protocol_no,
+                                           excluded_rows=rows, columns=session.get('columns'),
+                                           total_rows=session.get('total_accruals'),
+                                           on_study_date_missing_rows=session.get('invalid_rows'),
+                                           modified_rows=session.get('modified_rows'),
+                                           user_name=user_name, error=error)
 
-            data = json.loads(content.decode('utf8'))
-            np.save('results.npy', data)
-            session['total_accruals_imported'] = total_accruals
-            return render_template('accrual_data.html', total_accruals=total_accruals, protocol_no=protocol_no,
-                                   response=data, user_name=user_name)
-    if 'error' in session:
-        return redirect(url_for("upload_file", user_name=user_name, protocol_no=protocol_no))
+                data = json.loads(content.decode('utf8'))
+                np.save('results_'+protocol_no+'_'+user_name+'.npy', data)
+                session['total_accruals_imported'] = total_accruals
+                return render_template('accrual_data.html', total_accruals=total_accruals, protocol_no=protocol_no,
+                                       response=data, user_name=user_name)
+        if 'error' in session:
+            return redirect(url_for("upload_file", user_name=user_name, protocol_no=protocol_no))
     if 'total_accruals_imported' in session:
-        rows = np.load('results.npy', allow_pickle='TRUE').item()
-        return render_template('accrual_data.html', total_accruals=session.get('total_accruals_imported'),
-                               protocol_no=protocol_no, response=rows, user_name=user_name)
+        if path.exists("results_" + session["protocol"] + "_" + session["user"] + ".npy"):
+            rows = np.load('results_'+protocol_no+'_'+user_name+'.npy', allow_pickle='TRUE').item()
+            return render_template('accrual_data.html', total_accruals=session.get('total_accruals_imported'),
+                                    protocol_no=protocol_no, response=rows, user_name=user_name)
 
     return redirect(url_for("user_home", user_name=user_name, protocol_no=protocol_no))
 
