@@ -1,6 +1,6 @@
 # INSTALL PYTHON IMAGE
 FROM python:3.6
-MAINTAINER Harshita "hkoranne@ufl.edu"
+MAINTAINER Christopher "cshannon@ufl.edu"
 
 # INSTALL TOOLS
 COPY . /app
