@@ -14,41 +14,74 @@ app = Flask(__name__)
 @app.route("/", methods=['GET', 'POST'])
 def validate_user():
     if request.method == "POST":
+
+        # Gather the Username, Password and Protocol Number from the HTML form
         user_name = request.form["username"]
         password = request.form["password"]
         protocol_no = request.form["protocol_no"]
+
+        # Check to see if the Protocol Number is Valid and if the Username has access to the Protocol Number
+        # Saves the content from the validation. The content will have sections for 'accrual_info_only', 'protocol_no', and 'title'
         status, content = validate_protocol(user_name, password, protocol_no)
+
+        # If the Protocol Validation was unsuccessful alert the user that there was a problem
         if status != 200:
             return render_template('index.html',
                                    error="There was an error with your protocol no/username/password combination. Please try again.")
+
+        # Format the content returned from the Protocol Validation to JSON
         decode_json = content.decode('utf8').replace("'", '"')
         data = json.loads(decode_json)
+
+        # Runs if content could not be formatted as JSON
         if 'error' in data:
             return render_template('index.html',
                                    error=data['error'])
+
+        # Checks to see if the Protocol Number provided allows for Summary Accrual
         if 'accrual_info_only' in data and not data["accrual_info_only"]:
             return render_template('index.html',
                                    error="Summary accrual is set to 'No' for the provided protocol. Please try another protocol.")
+
+        # Stores the Username, protocol, and title in the Session
         session["user"] = user_name
         session["protocol"] = protocol_no
         session["title"] = data["title"]
 
+        # Passes the Username and Protocol Number to the user_home function located at endpoint
+        # "/user/<user_name>/<protocol_no>"
         return redirect(url_for("user_home", user_name=user_name, protocol_no=protocol_no))
+
+    # If there is an active session pull the information from the stored session data instead of prompting the user
     if 'user' in session:
+        # Passes the Username and Protocol Number to the user_home function located at endpoint
+        # "/user/<user_name>/<protocol_no>"
         return redirect(url_for("user_home", user_name=session.get('user'), protocol_no=session.get('protocol')))
+
+    # Loads the index.html when the page is first loaded and there is no active session
+    # index.html will prompt the user to enter Username, Password, and Protocol Number
     return render_template('index.html')
 
 
 @app.route("/about", methods=['GET'])
 def about():
+    # Loads the about.html when the page is loaded
+    # about.html does not prompt the user for any information
     return render_template('about.html')
 
 
 @app.route("/user/<user_name>/<protocol_no>")
 def user_home(user_name, protocol_no):
+
+    # Runs if there is no value for user in the session or the value for user in the session is null
     if "user" not in session or session["user"] is None:
+        # Runs if the value in the session for user is not equal to the user_name value passed into the function
         if session.get("user") != user_name:
+            # Calls the validate_user function located at endpoint "/"
             return redirect(url_for("validate_user"))
+
+    # Loads the user_home.html when the page is first loaded and there is an active session
+    # user_home.html will prompt the user to upload an Excel document and select an Ignore Mapping Tabs value
     return render_template("user_home.html", user_name=user_name, protocol_no=protocol_no, title=session["title"])
 
 
@@ -69,8 +102,10 @@ def logout():
 
 
 @app.route("/data/<user_name>/<protocol_no>", methods=['GET', 'POST'])
+
 def upload_file(user_name, protocol_no):
     if request.method == 'POST':
+
         try:
             if 'total_accruals' in session:
                 session.pop("total_accruals")
@@ -79,18 +114,25 @@ def upload_file(user_name, protocol_no):
                 session.pop("modified_rows")
                 np.save('store_'+protocol_no+'_'+user_name+'.npy', "")
 
+            # Get the user provided value for ignore_mapping_tabs from user_home.html
             ignore_mapping_tabs= request.form.get('ignore_mapping_tabs')
 
+            # Open the Excel document the user uploaded and parse it to get an two dimensional array
+            # Each row in the Excel document is an array
             received_data = request.get_array(field_name='file')
+
+            # If received_data is null prompt the user to upload an Excel document
             if received_data is None:
                 return render_template('user_home.html', user_name=user_name, protocol_no=protocol_no,
                                        error="File not received. Please upload the file before proceeding.")
 
+            # Initialize the OnCore Mappings to Null
             gender_data = None
             ethnicity_data = None
             race_data = None
             disease_site_data = None
 
+            # Runs if the user provided custom mapping tabs in the Gender, Ethnicity, Race, Disease Site Excel sheets
             if not ignore_mapping_tabs:
                 try:
                     gender_data = request.get_array(field_name='file', sheet_name="Gender")
@@ -119,6 +161,9 @@ def upload_file(user_name, protocol_no):
                     return render_template('user_home.html', user_name=user_name, protocol_no=protocol_no,
                                            error="Disease site mapping tab not found.")
 
+            # excluded_rows function is located in parsedata.py
+            # excluded_rows takes in the data from the Excel document and the Mapping Sheets. Both are passed as arrays
+            #
             modified_rows, on_study_date_missing_rows, cols, excluded_rows_dict, error = excluded_rows(received_data, gender_data, ethnicity_data, race_data, disease_site_data)
 
             if excluded_rows_dict is None:
