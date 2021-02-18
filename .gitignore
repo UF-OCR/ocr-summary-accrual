@@ -3,3 +3,4 @@
 __pycache__/
 /store.npy
 static/summary_accrual.xlsx
+static/summary_accrual.xlsm
