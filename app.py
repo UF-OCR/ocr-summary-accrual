@@ -5,11 +5,17 @@ from os import path
 from datetime import timedelta
 from client.ocrclient import *
 from client.parsedata import *
-from flask import Flask, request, render_template, session, redirect, url_for, jsonify, Markup
+from flask import Flask, request, render_template, session, redirect, url_for, jsonify, Markup, Response
 from flask.ext import excel
 import numpy as np
 
 app = Flask(__name__)
+
+
+@app.route("/health", methods=['GET'])
+def health():
+    return Response("Healthy", status=200, mimetype='application/json')
+
 
 @app.route("/", methods=['GET', 'POST'])
 def validate_user():
