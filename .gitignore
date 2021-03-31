@@ -2,5 +2,6 @@
 .DS_Store
 __pycache__/
 /store.npy
+venv/
 static/summary_accrual.xlsx
 static/summary_accrual.xlsm
