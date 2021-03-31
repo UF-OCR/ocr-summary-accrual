@@ -1,15 +1,15 @@
 version: "3.5"
 services:
   summary_accrual:
-    container_name: summary_accrual
-    image: ufocr/summary_accrual:1.0
+    container_name: ${container_name}
+    image: ${image}:${tag}
     restart: unless-stopped
     env_file:
-      - summary_accrual.env
+      - ${env_file}
     ports:
-      - "7000:5000"
+      - ${ports}
     healthcheck:
-      test: curl --fail -s http://localhost:5000/health || exit 1
+      test: curl --fail -s ${health_check} || exit 1
       interval: 1m
       timeout: 10s
       retries: 3
