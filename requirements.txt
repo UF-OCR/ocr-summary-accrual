@@ -6,7 +6,7 @@ pyexcel-xlsx==0.5.7
 pandas
 xlrd >= 1.0.0
 numpy
-lxml==4.6.3
+lxml==4.9.1
 zeep==3.4.0
 requests
 flask-login
